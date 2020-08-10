@@ -408,12 +408,8 @@ where
             FormatSamples::Flac { ref mut flac_samples, bits_per_sample } => flac_samples.next().map(|sample| {
                 sample
                     .map_err(FormatError::Flac)
-                    .and_then(|sample| match bits_per_sample {
-                        8 => Ok(sample::Sample::to_sample(sample as i8)),
-                        16 => Ok(sample::Sample::to_sample(sample as i16)),
-                        32 => Ok(sample::Sample::to_sample(sample)),
-                        _ => Err(FormatError::Flac(claxon::Error::Unsupported("Unsupported bit depth"))),
-                    })
+                    .map(|sample| sample << (32 - bits_per_sample))
+                    .map(sample::Sample::to_sample)
             }),
 
             #[cfg(feature = "ogg_vorbis")]
